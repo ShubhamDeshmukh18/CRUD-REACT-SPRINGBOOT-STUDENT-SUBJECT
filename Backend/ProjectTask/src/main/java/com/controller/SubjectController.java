@@ -1,0 +1,63 @@
+package com.controller;
+
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import com.exception.SubjectNotFoundException;
+import com.model.Subject;
+
+import com.repository.SubjectRepository;
+
+import java.util.List;
+
+
+@RestController
+@CrossOrigin("http://localhost:3000")
+public class SubjectController {
+
+    @Autowired
+    private SubjectRepository subjectRepository;
+
+    @PostMapping("/subjects")
+    Subject newSubject(@RequestBody Subject newSubject) {
+        return subjectRepository.save(newSubject);
+    }
+
+  
+
+    @GetMapping("/subjects")
+    List<Subject> getAllSubjects() {
+        return subjectRepository.findAll();
+    }
+
+    @GetMapping("/subject/{id}")
+    Subject getSubjectById(@PathVariable Long id) {
+        return subjectRepository.findById(id)
+                .orElseThrow(() -> new SubjectNotFoundException(id));
+    }
+
+    @PutMapping("/subject/{id}")
+    Subject updateSubject(@RequestBody Subject newSubject, @PathVariable Long id) {
+        return subjectRepository.findById(id)
+                .map(subject -> {
+                	subject.setName(newSubject.getName());
+                    subject.setCode(newSubject.getCode());                 
+                    subject.setType(newSubject.getType());
+                    
+                    return subjectRepository.save(subject);
+                }).orElseThrow(() -> new SubjectNotFoundException(id));
+    }
+
+    @DeleteMapping("/subject/{id}")
+    String deleteSubject(@PathVariable Long id){
+        if(!subjectRepository.existsById(id)){
+            throw new SubjectNotFoundException(id);
+        }
+        subjectRepository.deleteById(id);
+        return  "Subject with id "+id+" has been deleted success.";
+    }
+
+
+
+}
